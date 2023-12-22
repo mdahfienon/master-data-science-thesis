@@ -1,0 +1,216 @@
+---
+output: 
+  pdf_document:
+      number_section: yes
+header-includes:
+
+- \usepackage{float}
+
+editor_options: 
+  markdown: 
+    wrap: 72
+fontsize: 11pt
+---
+
+\pagenumbering {gobble}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = FALSE, comment = "", include = TRUE, warning = FALSE, message = FALSE, fig.align="center")
+
+setwd("E:/DOCUMENTS/CIVILE/BELGIQUE/MASTER_UCL/LSBA_2021/DATS2M/DATA_SCIENCE/BLOC_2_Bis/LDATS2840_MEMOIRE_DATA_SCIENCE/PROGRAMMING/R_thesis/plotting")
+
+require(knitr)
+require(ggplot2)
+require(patchwork)
+```
+
+```{r, eval = TRUE, cache = TRUE, echo = FALSE,  fig.width = 14, fig.height = 19, fig.align = "center", message = FALSE, fig.pos = "H"}
+
+mydata_virf <- read.csv("mydata_virf.csv", row.names = 1)
+
+thedata <- read.csv("thedata.csv", row.names = 1)
+
+thedataAAPL <- read.csv("thedataAAPL.csv", row.names = 1)
+
+thedataAMZN <- read.csv("thedataAMZN.csv", row.names = 1)
+
+thedataGOOG <- read.csv("thedataGOOG.csv", row.names = 1)
+
+thedataMSFT <- read.csv("thedataMSFT.csv", row.names = 1)
+
+
+mycolnames <- c("VIRF for conditional variance of META", 
+                "VIRF for conditional covariance of META and AAPL",
+                "VIRF for conditional covariance of META and GOOG",
+                "VIRF for conditional covariance of META and MSFT",
+                "VIRF for conditional covariance of META and AMZN",
+                "VIRF for conditional variance of AAPL",
+                "VIRF for conditional covariance of AAPL and GOOG",
+                "VIRF for conditional covariance of AAPL and MSFT",
+                "VIRF for conditional covariance of AAPL and AMZN",
+                "VIRF for conditional variance of GOOG", 
+                "VIRF for conditional covariance of GOOG and MSFT",
+                "VIRF for conditional covariance of GOOG and AMZN",
+                "VIRF for conditional variance of MSFT",
+                "VIRF for conditional covariance of MSFT and AMZN",
+                "VIRF for conditional variance of AMZN" )
+the_names <- colnames(mydata_virf)
+
+
+myfunction_virf <- function(data = thedataAAPL, 
+                            y_name = "META", 
+                            titre = "VIRF for conditional variance of META" ){
+  
+  y <- c(paste0(y_name, "_exp"), paste0(y_name, "_logcosh"), 
+         paste0(y_name, "_kgv"), paste0(y_name, "_kcca"), 
+         paste0(y_name, "_identity"))
+  
+  l1 <- ggplot(data, aes(x = .data[["horizon"]]))+
+    geom_line(aes(y = .data[[y[1]]]), colour = "tomato", linetype = 2)+
+    geom_line(aes(y = .data[[y[2]]]), colour = "purple", linetype = 3)+
+    geom_line(aes(y = .data[[y[3]]]), colour = "cyan", linetype = 4)+
+    geom_line(aes(y = .data[[y[4]]]), colour = "#0072B2", linetype = 5)+
+    geom_line(aes(y = .data[[y[5]]]), colour = "grey", linetype = 6)+
+    labs(title = titre,  y = "", x = "horizon")+
+    theme_bw()+
+    theme(plot.title = element_text(size = 12, hjust = 0.05))
+
+
+  l1
+  
+}
+
+a1 <- myfunction_virf(data = thedataAAPL, y=the_names[1], titre = mycolnames[1])
+
+a2 <- myfunction_virf(data = thedataAAPL, y=the_names[2], titre = mycolnames[2])
+
+a3 <- myfunction_virf(data = thedataAAPL, y=the_names[3], titre = mycolnames[3])
+
+a4 <- myfunction_virf(data = thedataAAPL, y=the_names[4], titre = mycolnames[4])
+
+a5 <- myfunction_virf(data = thedataAAPL, y=the_names[5], titre = mycolnames[5])
+
+a6 <- myfunction_virf(data = thedataAAPL, y=the_names[6], titre = mycolnames[6])
+
+a7 <- myfunction_virf(data = thedataAAPL, y=the_names[7], titre = mycolnames[7])
+
+a8 <- myfunction_virf(data = thedataAAPL, y=the_names[8], titre = mycolnames[8])
+
+a9 <- myfunction_virf(data = thedataAAPL, y=the_names[9], titre = mycolnames[9])
+
+a10 <- myfunction_virf(data = thedataAAPL, y=the_names[10], titre = mycolnames[10])
+
+a11 <- myfunction_virf(data = thedataAAPL, y=the_names[11], titre = mycolnames[11])
+
+a12 <- myfunction_virf(data = thedataAAPL, y=the_names[12], titre = mycolnames[12])
+
+a13 <- myfunction_virf(data = thedataAAPL, y=the_names[13], titre = mycolnames[13])
+
+a14 <- myfunction_virf(data = thedataAAPL, y=the_names[14], titre = mycolnames[14])
+
+a15 <- myfunction_virf(data = thedataAAPL, y=the_names[15], titre = mycolnames[15])
+
+
+
+ m1 <- ggplot(thedata, aes(x = "horizon"))+
+    geom_segment(x = 0.25, xend = 0.7, y =0.07 , yend =0.07, colour = "tomato", linetype = 2)+
+  annotate("text", label = "exp", x = 0.9, y = 0.07)+
+    geom_segment(x = 0.25, xend = 0.7, y =0.00 , yend =0, colour = "purple", linetype = 3)+
+  annotate("text", label = "logcosh", x = 0.9, y = 0.0)+      
+      theme_minimal()+
+ xlim(c(0,1.4))+
+  ylim(c(0, 0.1))+
+  labs(x = "", y = "")+
+  theme(axis.text = element_blank(),
+        panel.border = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
+
+
+le <- ggplot(thedata, aes(x = "horizon"))+
+    
+  theme_minimal()+
+    
+      geom_segment(x = 0.25, xend = 0.7, y =0.035 , yend =0.035, colour = "grey", linetype = 5)+
+  annotate("text", label = "identity", x = 0.9, y = 0.035)+
+ xlim(c(0,1.4))+
+  ylim(c(0, 0.1))+
+  labs(x = "", y = "")+
+  theme(axis.text = element_blank(),
+        panel.border = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
+
+
+m2 <- ggplot(thedata, aes(x = "horizon"))+
+    
+  geom_segment(x = 0.25, xend = 0.7, y =0.07 , yend =0.07, colour = "cyan", linetype = 4)+
+  annotate("text", label = "kgv", x = 0.9, y = 0.07)+
+  theme_minimal()+
+    geom_segment(x = 0.25, xend = 0.7, y =0.00 , yend =0, colour = "#0072B2", linetype = 4)+
+  annotate("text", label = "kcca", x = 0.9, y = 0.0)+
+ xlim(c(0,1.4))+
+  ylim(c(0, 0.1))+
+  labs(x = "", y = "")+
+  theme(axis.text = element_blank(),
+        panel.border = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
+
+
+  m1 + le + m2 + a1 + a2 + a3 + a4 + a5 + a6 + a7 + a8 + a9 + a10 + a11 + a12 + a13 + a14 + a15 + plot_layout(nrow = 6, ncol = 3)
+
+
+
+```
+
+
+
+```{r, eval = TRUE, cache = TRUE, echo = FALSE,  fig.width = 14, fig.height = 19, fig.align = "center", message = FALSE, fig.pos = "H"}
+thedataAAPL_negative <- read.csv("thedataAAPL_negative.csv", row.names = 1)
+
+l11 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[1], titre = mycolnames[1])
+
+l12 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[2], titre = mycolnames[2])
+
+l13 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[3], titre = mycolnames[3])
+
+l14 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[4], titre = mycolnames[4])
+
+l15 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[5], titre = mycolnames[5])
+
+l16 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[6], titre = mycolnames[6])
+
+l17 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[7], titre = mycolnames[7])
+
+l18 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[8], titre = mycolnames[8])
+
+l19 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[9], titre = mycolnames[9])
+
+l110 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[10], titre = mycolnames[10])
+
+l111 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[11], titre = mycolnames[11])
+
+l112 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[12], titre = mycolnames[12])
+
+l113 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[13], titre = mycolnames[13])
+
+l114 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[14], titre = mycolnames[14])
+
+l115 <- myfunction_virf(data = thedataAAPL_negative, y=the_names[15], titre = mycolnames[15])
+
+m1 + le + m2 + l11 + l12 + l13 + l14 + l15 + l16 + l17 + l18 + l19 + l110 + l111 + l112 + l113 + l114 + l115 + plot_layout(nrow = 6, ncol = 3) 
+```
+
+
+
+

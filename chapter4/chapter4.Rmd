@@ -1,0 +1,519 @@
+---
+title: "chapter4_appendix"
+author: "Mathias Dah Fienon"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+require(ggplot2)
+require(patchwork)
+require(lmtest)
+```
+
+# Granger test
+```{r}
+closing <- read.csv("closing.csv", row.names = 1)
+
+closing_ts <- as.ts(closing, start = c(2018, 10), 
+                    end = c(2023, 10), frequency =7 )
+```
+
+
+```{r}
+log_closing <- read.csv("closing_log_returns.csv", row.names = 1)
+```
+
+
+```{r}
+
+plot_function <- function(data = closing){
+  
+  closing_for_plot <- data
+    
+  closing_for_plot$date <- as.Date(row.names(data))
+  
+  data <- reshape2::melt(data = closing_for_plot, id.var = c("date"),
+                         variable.names=c("META", "AAPL", "GOOG",
+                                          "MSFT", "AMZN"))
+  
+  ggplot(data)+
+    geom_line( aes(x = date, y = value, color = variable),
+               lwd = 0.2 , show.legend = TRUE)+
+    labs(y = "", x = "date", color = NULL)+
+    theme_bw()+
+    theme(legend.position = "bottom")+
+    # guides(color = TRUE)+
+    scale_color_manual(values = c("black","tomato","lightgreen", "pink","purple"))
+  
+}
+
+
+```
+
+## Getting the log returns
+
+```{r}
+log_closing <- closing[2:dim(closing)[1],]
+
+
+log_closing$META <- diff(log(closing$META))
+log_closing$AAPL <- diff(log(closing$AAPL))
+log_closing$GOOG <- diff(log(closing$GOOG))
+log_closing$MSFT <- diff(log(closing$MSFT))
+log_closing$AMZN <- diff(log(closing$AMZN))
+
+```
+
+```{r}
+log_closing_for_plot <- log_closing
+
+log_closing_for_plot$date <- as.Date(rownames(log_closing_for_plot))
+
+
+g1 <- ggplot(log_closing_for_plot, aes(x = date  , y = META))+
+  geom_line( color = "black",lwd = 0.2)+
+  labs(title = "Meta ",  y = "", x = "date")+
+  theme_bw()
+
+g2 <- ggplot(log_closing_for_plot, aes(x = date , y = AAPL))+
+  geom_line( color = "tomato",lwd = 0.2)+
+  labs(title = "Apple ",  y = "", x = "date")+
+  theme_bw()
+
+g3 <- ggplot(log_closing_for_plot, aes(x = date , y = GOOG))+
+  geom_line( color = "lightgreen",lwd = 0.2)+
+  labs(title = "Google ",  y = "", x = "date")+
+  theme_bw()
+
+g4 <- ggplot(log_closing_for_plot, aes(x = date , y = MSFT))+
+  geom_line( color = "pink",lwd = 0.2)+
+  labs(title = "Microsft ",  y = "", x = "date")+
+  theme_bw()
+
+g5 <- ggplot(log_closing_for_plot, aes(x = date , y = AMZN))+
+  geom_line( color = "purple",lwd = 0.2)+
+  labs(title = "Amazone ",  y = "", x = "date")+
+  theme_bw()
+
+g6 <- plot_function(data = log_closing)
+
+```
+
+```{r}
+g1+g2+g3+g4+g5+ g6 + plot_layout(ncol = 2, nrow = 3, guides = "collect")+theme(legend.position = "right")
+```
+
+## Dicker fuller test
+
+```{r}
+require(tseries)
+```
+
+```{r}
+adf.test(closing$META)
+```
+
+```{r, fig.asp=0.6}
+closing_for_plot <- closing
+  
+closing_for_plot$date <- as.Date(row.names(closing))
+closing_for_plot$colors1 <- "Meta"
+closing_for_plot$colors2 <- "Apple"
+closing_for_plot$colors3 <- "Google"
+closing_for_plot$colors4 <- "Microsoft"
+closing_for_plot$colors5 <- "Amazone"
+
+
+ggplot(closing_for_plot)+
+  geom_line( aes(x = date, y = META, fill = colors1), color = "black",
+             lwd = 0.2 , show.legend = TRUE)+
+  geom_line( aes(x = date, y = AAPL, fill = colors2), color = "tomato",
+             lwd = 0.2, show.legend = TRUE)+
+  geom_line( aes(x = date, y = GOOG, fill = colors3), color = "lightgreen",
+             lwd = 0.2, show.legend = TRUE)+
+  geom_line( aes(x = date, y = MSFT, fill = colors4), color = "pink",
+             lwd = 0.2, show.legend = TRUE)+
+  geom_line( aes(x = date, y = AMZN, fill = colors5), color = "purple",
+             lwd = 0.2, show.legend = TRUE)+
+  labs(title = "GAFAM stock values from 2018-10-31 to 2023-10-31",
+       y = "", x = "date", fill = "")+
+  theme_bw()+
+  # guides(color = TRUE)+
+  theme(legend.position = "top")+
+  scale_color_discrete(breaks = c("black","tomato","lightgreen", "pink","purple"))
+```
+
+
+```{r}
+plot(x = closing_for_plot$date, y = closing_for_plot$META, lty = "l")
+plot(x = closing_for_plot$date, y = closing_for_plot$META, lty = "l")
+
+legend("top", legend = c("Meta", "Apple", "Google", "Microsoft", "Amazone") , col = c("black","tomato","lightgreen", "pink","purple") )
+```
+
+
+```{r}
+
+g1 <- ggplot(closing_for_plot, aes(x = as.Date(date) , y = META))+
+  geom_line( color = "black",lwd = 0.2)+
+  labs(title = "Meta ",  y = "", x = "date")+
+  theme_bw()
+
+g2 <- ggplot(closing_for_plot, aes(x = as.Date(date) , y = AAPL))+
+  geom_line( color = "black",lwd = 0.2)+
+  labs(title = "Apple ",  y = "", x = "date")+
+  theme_bw()
+
+g3 <- ggplot(closing_for_plot, aes(x = as.Date(date) , y = GOOG))+
+  geom_line( color = "black",lwd = 0.2)+
+  labs(title = "Google ",  y = "", x = "date")+
+  theme_bw()
+
+g4 <- ggplot(closing_for_plot, aes(x = as.Date(date) , y = MSFT))+
+  geom_line( color = "black",lwd = 0.2)+
+  labs(title = "Microsft ",  y = "", x = "date")+
+  theme_bw()
+
+g5 <- ggplot(closing_for_plot, aes(x = as.Date(date) , y = AMZN))+
+  geom_line( color = "black",lwd = 0.2)+
+  labs(title = "Amazone ",  y = "", x = "date")+
+  theme_bw()
+g1+g2+g3+g4+g5 + plot_layout(ncol = 2, nrow = 3)
+```
+
+#########################
+
+Simple return differentiate
+
+######################
+
+
+```{r}
+simple_closing <- closing[2:dim(closing)[1],]
+
+
+simple_closing$META <- diff(closing$META)
+simple_closing$AAPL <- diff(closing$AAPL)
+simple_closing$GOOG <- diff(closing$GOOG)
+simple_closing$MSFT <- diff(closing$MSFT)
+simple_closing$AMZN <- diff(closing$AMZN)
+```
+
+```{r}
+summary(simple_closing)
+```
+
+
+```{r}
+
+simple_closing$META <- simple_closing$META - mean(simple_closing$META)
+simple_closing$AAPL <- simple_closing$AAPL - mean(simple_closing$AAPL)
+simple_closing$GOOG <- simple_closing$GOOG - mean(simple_closing$GOOG)
+simple_closing$MSFT <- simple_closing$MSFT - mean(simple_closing$MSFT)
+simple_closing$AMZN <- simple_closing$AMZN - mean(simple_closing$AMZN)
+
+```
+
+
+
+```{r}
+statdes <- function(X){
+  n <- length(names(X))
+  stats<- matrix(nrow=n,ncol=7)
+  colnames(stats) <- c("Min","1st Qu.","Median","Mean", "Ecart-type","3rd Qu.", "Max" )
+  rownames(stats) <- names(X)
+
+  for(i in names(X)){
+    stats[i,]<-c(round(min(X[[i]]),1), round(quantile(X[[i]],0.25),1),  round(median(X[[i]]),1), round(mean(X[[i]]),1), round(sd(X[[i]]),1), round(quantile(X[[i]],0.75),1), round(max(X[[i]]),1))
+   }
+  return(stats)
+  
+}
+
+statdes <- statdes(simple_closing)
+
+statdes |> 
+  knitr::kable()
+```
+
+```{r}
+statdes(closing)
+```
+
+
+```{r}
+skewness(r)
+kurtosis(r)
+jarque.bera.test(r)
+qqnorm(r)
+qqline(r)
+```
+
+```{r}
+grangertest(META ~ MSFT, order = 10, data = log_closing)
+```
+
+```{r}
+data(ChickEgg)
+grangertest(egg ~ chicken, order = 3, data = ChickEgg)
+grangertest(chicken ~ egg, order = 3, data = ChickEgg)
+```
+
+
+```{r}
+
+for( k in 1:4){
+  for (l in k:4){
+    t_result <- grangertest(closing[,k], closing[,l+1], order = 10) 
+    cat( "response = ", colnames(closing)[k], " predictor = ", colnames(closing)[l+1] ," F = ", t_result$F[2], "p-val = ", t_result$`Pr(>F)`[2], "\n")
+  }
+}
+
+```
+
+
+```{r}
+grangertest(closing[,2], closing[,1], order = 10)
+```
+
+```{r}
+grangertest(closing[,3], closing[,1], order = 10)
+
+```
+
+
+```{r}
+grangertest(closing[,3], closing[,2], order = 10)
+```
+
+
+```{r}
+grangertest(closing[,4], closing[,1], order = 10)
+```
+
+
+
+```{r}
+grangertest(closing[,4], closing[,2], order = 10)
+```
+
+
+```{r}
+grangertest(closing[,4], closing[,3], order = 10)
+```
+
+
+```{r}
+grangertest(closing[,5], closing[,1], order = 10)
+```
+
+
+```{r}
+grangertest(closing[,5], closing[,2], order = 10)
+```
+
+
+```{r}
+grangertest(closing[,5], closing[,3], order = 10)
+```
+
+
+```{r}
+grangertest(closing[,5], closing[,4], order = 10)
+```
+
+
+# Models
+
+
+## quick checkout
+
+```{r}
+qqnorm(log_closing$META)
+qqline(log_closing$META)
+plot(density(log_closing$META))
+acf(log_closing$META) # autocorrelation function of returns
+acf(log_closing$META^2)
+```
+
+
+```{r}
+
+qqplot_and_density <- function(frame = log_closing, var = "META", col = "red"){
+  
+  moy <- mean(frame[, var])
+  
+  ecart <- sd(frame[, var])
+  
+  titre <- paste0("QQ-plot and density plot of ", var)
+  qplot_meta <- ggplot(frame, aes(sample = frame[[var]]))+
+  stat_qq()+
+  stat_qq_line()+
+  theme_bw()+
+  labs(y = "", x = "") # +
+    # annotate("text", 
+    #          label = "Normality test ",
+    #   parse = FALSE,
+    #    x = 0, y = -0.05)
+    
+
+  density_plot <- ggplot(frame, aes(x = frame[[var]]))+
+    geom_density()+
+    stat_function(fun = dnorm, args = list(mean = moy, sd = ecart), geom = "line", color = col, mapping = aes(color = "normal distribution"), show.legend = TRUE) +
+    theme_bw()+
+    labs(y = "", x = "")
+
+  qplot_meta + density_plot + plot_layout(ncol = 2, nrow = 1)+
+    plot_annotation(title = titre, theme = theme(plot.title = element_text(size = 8, hjust = 0.5,)))
+  
+}
+
+
+qqplot_and_density()
+qqplot_and_density(var = "AAPL", col = "lightgreen")
+qqplot_and_density(var = "GOOG", col = "lightgreen")
+qqplot_and_density(var = "MSFT", col = "lightgreen")
+qqplot_and_density(var = "AMZN", col = "lightgreen")
+
+```
+
+
+```{r}
+
+moy <- mean(log_closing[, 1])
+
+ecart <- sd(log_closing[, 1])
+
+ggplot(log_closing, aes(x = META))+
+    stat_density(geom = "line")+
+    stat_function(fun = dnorm, args = list(mean = moy, sd = ecart), geom = "line") +
+    theme_bw()+
+    labs(y = "", x = "")
+```
+
+
+
+
+
+
+
+
+## BEKK model
+
+```{r}
+require(BEKKs)
+
+# fitting symmetric BEKK model
+
+sBEKK <- bekk_fit(bekk_spec(), ts(log_closing))
+
+# fitting a symmetric diagonal BEKK
+
+sdBEKK <- bekk_fit(bekk_spec(model = list(type = "dbekk", asymmetric = FALSE)), ts(log_closing))
+
+```
+
+
+```{r}
+BEKK_residual <- sdBEKK$e_t
+
+write.csv(BEKK_residual, "BEKK_residual.csv")
+```
+
+
+## DCC model
+
+
+```{r}
+require(rmgarch)
+
+univariate_spec <- ugarchspec(
+  mean.model = list(armaOrder = c(0,0)),
+  variance.model = list(garchOrder = c(1,1), model = "sGARCH"),
+  distribution.model = "std"
+  )
+
+n <- dim(log_closing)[2]
+
+dcc_spec <- dccspec(
+  uspec = multispec(replicate(n, univariate_spec)),
+  dccOrder = c(1,1),
+  distribution = "mvnorm"
+)
+
+dcc_fit <- dccfit(dcc_spec, data = log_closing)
+
+
+```
+
+```{r}
+dcc_residuals <- dcc_fit@model[["residuals"]]
+
+write.csv(dcc_residuals, "dcc_residuals.csv")
+```
+
+
+
+## shocks identification 
+
+```{r}
+residuals <- read.csv("BEKK_residual.csv", row.names = 1)
+
+#colnames(residuals) <- colnames(log_closing)
+```
+
+```{r}
+shocks <- KernelICA::kernel_ica(residuals, variant = "kgv", kernel = "gauss")
+
+```
+
+```{r}
+shocks$Xmu
+
+round(shocks$W,3)
+```
+
+```{r}
+shocks2 <- KernelICA::kernel_ica(residuals, variant = "kcca", kernel = "gauss")
+
+round(shocks2$W,3)
+```
+
+
+```{r}
+shocks4 <- fastICA::fastICA(residuals, n.comp = 5, alg.typ = "parallel", fun = "exp", alpha = 1,method = "C")
+  
+round(shocks4$W,3)
+```
+
+```{r}
+shocks3 <- fastICA::fastICA(residuals, n.comp = 5, alg.typ = "parallel", fun = "logcosh", alpha = 1,method = "C")
+  
+round(shocks3$W,3)
+```
+
+
+```{r}
+components <- as.data.frame(shocks$S)
+
+write.csv(components, "components.csv")
+
+#colnames(components) <- colnames(residuals)
+```
+
+
+```{r}
+variance <- cov(residuals)
+rownames(variance) <- c("META", "AAPL", "GOOG", "MSFT", "AMZN")
+
+variance |> knitr::kable(digits = 3, col.names = c("META", "AAPL", "GOOG", "MSFT", "AMZN"), row.names = TRUE)
+```
+
+
+```{r}
+summary(residuals)
+```
+
+
